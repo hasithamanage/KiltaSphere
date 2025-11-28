@@ -1,0 +1,6 @@
+@KiltaSphereAPI_HostAddress = http://localhost:5155
+
+GET {{KiltaSphereAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
