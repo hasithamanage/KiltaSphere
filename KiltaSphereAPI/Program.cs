@@ -1,5 +1,7 @@
 using KiltaSphereAPI.Data;
 using Microsoft.EntityFrameworkCore;
+using KiltaSphereAPI.Interfaces;
+using KiltaSphereAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Registers the repository
+builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 
 var app = builder.Build();
 
