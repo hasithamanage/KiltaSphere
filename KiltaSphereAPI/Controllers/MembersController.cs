@@ -7,12 +7,12 @@ using KiltaSphereAPI.Models;
 [ApiController]
 public class MembersController : ControllerBase
 {
-    private readonly IMemberRepository _memberRepository;
+    private readonly IMemberService _memberService;
 
-    // Dependency Injection: The controller asks for the IMemberRepository
-    public MembersController(IMemberRepository memberRepository)
+    // Dependency Injection: Inject the Service
+    public MembersController(IMemberService memberService)
     {
-        _memberRepository = memberRepository;
+        _memberService = memberService;
     }
 
     // GET: /api/members
@@ -21,8 +21,8 @@ public class MembersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
     {
-        // 1. Logic: Call the repository to fetch the data
-        var members = await _memberRepository.GetAllMembersAsync();
+        // 1. Logic: Call the service to fetch the data
+        var members = await _memberService.GetMemberListAsync();
 
         // 2. Response: Return a 200 OK with the data
         return Ok(members);

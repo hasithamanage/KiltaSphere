@@ -2,6 +2,7 @@ using KiltaSphereAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using KiltaSphereAPI.Interfaces;
 using KiltaSphereAPI.Repositories;
+using KiltaSphereAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,9 @@ builder.Services.AddSwaggerGen();
 
 // Registers the repository
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
+
+// Register the Service (The business logic layer)
+builder.Services.AddScoped<IMemberService, MemberService>();
 
 var app = builder.Build();
 
