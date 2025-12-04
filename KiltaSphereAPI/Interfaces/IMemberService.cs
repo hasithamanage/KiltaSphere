@@ -5,10 +5,17 @@ namespace KiltaSphereAPI.Interfaces
     // The Service Interface defines all business operations
     public interface IMemberService
     {
-        // This method may include complex filtering, validation, or orchestration logic later
         Task<IEnumerable<Member>> GetMemberListAsync();
 
-        // This could validate the email format, check for existing members, etc.
-        Task<bool> CreateNewMemberAsync(Member member);
+        // Get by ID
+        Task<Member?> GetMemberByIdAsync(int id);
+
+        // Create (returns the created Member or null if failed)
+        Task<Member?> CreateNewMemberAsync(Member member);
+
+        // Delete
+        Task<bool> DeleteMemberAsync(int id);
+
+        // Will handle Update (PUT) later
     }
 }

@@ -15,15 +15,33 @@ namespace KiltaSphereAPI.Services
 
         public async Task<IEnumerable<Member>> GetMemberListAsync()
         {
-            // Currently simple pass-through to repository
             return await _memberRepository.GetAllMembersAsync();
         }
 
-        public async Task<bool> CreateNewMemberAsync(Member member)
+        public async Task<Member?> GetMemberByIdAsync(int id)
         {
-            // Future Business Logic goes here (e.g., set default status, generate welcome email, validate fields)
+            return await _memberRepository.GetMemberByIdAsync(id);
+        }
+
+        public async Task<Member?> CreateNewMemberAsync(Member member)
+        {
+            // Business Logic Check: Could check if email already exists before adding
 
             await _memberRepository.AddMemberAsync(member);
+            var success = await _memberRepository.SaveChangesAsync();
+
+            return success ? member : null; // Return the member or null on failure
+        }
+
+        public async Task<bool> DeleteMemberAsync(int id)
+        {
+            var deleteResult = await _memberRepository.DeleteMemberAsync(id);
+
+            if (!deleteResult)
+            {
+                return false; // Not found in repository
+            }
+
             return await _memberRepository.SaveChangesAsync();
         }
     }

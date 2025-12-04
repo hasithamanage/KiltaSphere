@@ -30,7 +30,24 @@ namespace KiltaSphereAPI.Repositories
         public async Task<bool> AddMemberAsync(Member member)
         {
             await _context.Members.AddAsync(member);
-            // Stage the member for saving; actual database save happens in the service layer.
+            // Stage the member for saving; actual database save happens in the service layer
+            return true;
+        }
+
+        public async Task<bool> DeleteMemberAsync(int id)
+        {
+            // 1. Find the member
+            var memberToDelete = await _context.Members.FindAsync(id);
+
+            if (memberToDelete == null)
+            {
+                return false; // Member not found
+            }
+
+            // 2. Remove the member
+            _context.Members.Remove(memberToDelete);
+
+            // Save changes will be called by the service layer
             return true;
         }
 
