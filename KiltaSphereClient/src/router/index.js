@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import MemberListView from '../views/MemberListView.vue'; // 1. Import the new view
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,6 +9,12 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+    },
+    // Add the route for the member list
+    {
+      path: '/members',
+      name: 'members',
+      component: MemberListView,
     },
     {
       path: '/about',
