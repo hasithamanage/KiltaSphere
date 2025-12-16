@@ -1,4 +1,5 @@
 ﻿using KiltaSphereAPI.Models;
+using KiltaSphereAPI.DTOs;  
 
 namespace KiltaSphereAPI.Interfaces
 {
@@ -10,12 +11,13 @@ namespace KiltaSphereAPI.Interfaces
         // Get by ID
         Task<Member?> GetMemberByIdAsync(int id);
 
-        // Create (returns the created Member or null if failed)
-        Task<Member?> CreateNewMemberAsync(Member member);
+        // Create
+        Task<MemberReadDTO> CreateMemberAsync(MemberCreationDTO memberDto);
 
         // Delete
-        Task<bool> DeleteMemberAsync(int id);
+        Task<bool> DeleteMemberByIdAsync(int memberId);
 
-        // Will handle Update (PUT) later
+        // Update
+        Task<MemberReadDTO?> UpdateMemberAsync(int memberId, MemberUpdateDTO memberDto);
     }
 }

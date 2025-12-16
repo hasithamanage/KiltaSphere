@@ -49,35 +49,52 @@ public class MembersController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<Member>> PostMember([FromBody] MemberCreationDTO memberDto)
+    public async Task<ActionResult<MemberReadDTO>> CreateMember([FromBody] MemberCreationDTO memberDto)
     {
-        // Check Model State (automatic validation from DTO attributes)
+        // Check Model State (Validation)
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState); // Return 400 with validation errors
         }
 
-        // 1. Mapping: Convert DTO to Model
-        var member = new Member
-        {
-            FirstName = memberDto.FirstName,
-            LastName = memberDto.LastName,
-            Email = memberDto.Email,
-            JoiningDate = DateTime.Now, // Set server side for integrity
-            MembershipStatus = "Pending" // Set server side default
-        };
-
-        // 2. Logic: Call the service
-        var createdMember = await _memberService.CreateNewMemberAsync(member);
+        // 1. Logic: Pass the DTO directly to the service. The service handles everything else.
+        var createdMember = await _memberService.CreateMemberAsync(memberDto);
 
         if (createdMember == null)
         {
-            // Handle unique constraint violation (e.g. email already exists)
             return BadRequest("Luoja (Creation failed). Tarkista tiedot.");
         }
 
-        // 3. Response: Return 201 Created with the location of the new resource
-        return CreatedAtAction(nameof(GetMember), new { id = member.MemberId }, member);
+        // 2. Response: Return 201 Created with the location of the new resource
+        return CreatedAtAction(nameof(GetMember), new { id = createdMember.MemberId }, createdMember);
+    }
+
+    // PUT: /api/members/1
+    [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<MemberReadDTO>> UpdateMember(int id, [FromBody] MemberUpdateDTO memberDto)
+    {
+        // 1. Validation Check: Ensure the ID in the route matches the data provided
+
+        // Model state validation (from DTO attributes)
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState); // Return 400 with validation errors
+        }
+
+        // 2. Logic: Call the DTO centric service method
+        var updatedMember = await _memberService.UpdateMemberAsync(id, memberDto);
+
+        if (updatedMember == null)
+        {
+            // If ID is not found in the database
+            return NotFound();
+        }
+
+        // 3. Response: Return 200 OK with the updated member data (MemberReadDTO)
+        return Ok(updatedMember);
     }
 
     // DELETE: /api/members/1
@@ -86,14 +103,16 @@ public class MembersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteMember(int id)
     {
-        var success = await _memberService.DeleteMemberAsync(id);
+        // Call the service method to handle the deletion logic
+        var result = await _memberService.DeleteMemberByIdAsync(id);
 
-        if (!success)
+        if (!result)
         {
-            return NotFound(); // 404 if the member to delete wasn't found
+            // If the service returns false, the member was not found or save failed
+            return NotFound();
         }
 
-        // Return 204 No Content 
+        // Return 204 No Content (standard response for a successful delete)
         return NoContent();
     }
 

@@ -27,6 +27,7 @@ namespace KiltaSphereAPI.Repositories
             return await _context.Members.FindAsync(id);
         }
 
+        // Stages the entity
         public async Task<bool> AddMemberAsync(Member member)
         {
             await _context.Members.AddAsync(member);
@@ -51,6 +52,7 @@ namespace KiltaSphereAPI.Repositories
             return true;
         }
 
+        // Save changes
         public async Task<bool> SaveChangesAsync()
         {
             // Returns true if one or more rows were affected

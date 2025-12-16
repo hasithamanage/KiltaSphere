@@ -2,7 +2,7 @@
 
 namespace KiltaSphereAPI.DTOs
 {
-    // [Data Validation & API Input Control]
+    // [API Input Contract]
     public class MemberCreationDTO
     {
         [Required(ErrorMessage = "Etunimi (First Name) on pakollinen.")]
@@ -18,7 +18,12 @@ namespace KiltaSphereAPI.DTOs
         [MaxLength(250)]
         public string Email { get; set; } = string.Empty;
 
-        // Omit sensitive fields like NationalIdentificationNumber 
-        // and internal fields like JoiningDate/Status from the creation input
+        // Status is mandatory and is sent by the Vue form
+        [Required]
+        public string MembershipStatus { get; set; } = string.Empty;
+
+        // Omitted Id, NationalIdentificationNumber fields for data protection
+        // and RegistrationDate (set by server)
+       
     }
 }

@@ -1,5 +1,6 @@
 ﻿using KiltaSphereAPI.Interfaces;
 using KiltaSphereAPI.Models;
+using KiltaSphereAPI.DTOs;
 
 namespace KiltaSphereAPI.Services
 {
@@ -23,19 +24,77 @@ namespace KiltaSphereAPI.Services
             return await _memberRepository.GetMemberByIdAsync(id);
         }
 
-        public async Task<Member?> CreateNewMemberAsync(Member member)
+        public async Task<MemberReadDTO> CreateMemberAsync(MemberCreationDTO memberDto)
         {
-            // Business Logic Check: Could check if email already exists before adding
+            // 1. DTO to Entity Mapping
+            var memberEntity = new Member
+            {
+                FirstName = memberDto.FirstName,
+                LastName = memberDto.LastName,
+                Email = memberDto.Email,
+                MembershipStatus = memberDto.MembershipStatus,
+                JoiningDate = DateTime.UtcNow
+            };
 
-            await _memberRepository.AddMemberAsync(member);
-            var success = await _memberRepository.SaveChangesAsync();
+            // 2. Add and Save
+            await _memberRepository.AddMemberAsync(memberEntity);
+            await _memberRepository.SaveChangesAsync();
 
-            return success ? member : null; // Return the member or null on failure
+            // 3. Entity to Read DTO Mapping (Returning the saved object with its new Id)
+            return new MemberReadDTO
+            {
+                MemberId = memberEntity.MemberId,
+                FirstName = memberEntity.FirstName,
+                LastName = memberEntity.LastName,
+                Email = memberEntity.Email,
+                MembershipStatus = memberEntity.MembershipStatus,
+                JoiningDate = memberEntity.JoiningDate
+            };
         }
 
-        public async Task<bool> DeleteMemberAsync(int id)
+        public async Task<MemberReadDTO?> UpdateMemberAsync(int memberId, MemberUpdateDTO memberDto)
         {
-            var deleteResult = await _memberRepository.DeleteMemberAsync(id);
+            // 1. Fetch the existing entity from the database
+            var memberEntity = await _memberRepository.GetMemberByIdAsync(memberId);
+
+            // If the member doesn't exist, return null
+            if (memberEntity == null)
+            {
+                return null;
+            }
+
+            // 2. Apply changes from the DTO to the Entity
+            // Only update the fields present in the MemberUpdateDTO
+            memberEntity.FirstName = memberDto.FirstName;
+            memberEntity.LastName = memberDto.LastName;
+            memberEntity.Email = memberDto.Email;
+            memberEntity.MembershipStatus = memberDto.MembershipStatus;
+
+            // 3. Save the changes to the database
+            var success = await _memberRepository.SaveChangesAsync();
+
+            if (!success)
+            {
+                // Return null if the save operation fails
+                return null;
+            }
+
+            // 4. Map the updated Entity back to a Read DTO for the response
+            return new MemberReadDTO
+            {
+                MemberId = memberEntity.MemberId,
+                FirstName = memberEntity.FirstName,
+                LastName = memberEntity.LastName,
+                Email = memberEntity.Email,
+                MembershipStatus = memberEntity.MembershipStatus,
+                JoiningDate = memberEntity.JoiningDate
+            };
+        }
+
+        public async Task<bool> DeleteMemberByIdAsync(int memberId)
+        {
+            // Use repository method
+            var deleteResult = await _memberRepository.DeleteMemberAsync(memberId);
 
             if (!deleteResult)
             {

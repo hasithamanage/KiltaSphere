@@ -1,55 +1,105 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView, RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/members">Jäsenet (Members)</RouterLink>
+  <div id="app-wrapper">
+    
+    <header class="app-header">
+      <div class="logo-container">
+        <RouterLink to="/" class="site-title">
+          👤 KiltaSphere
+        </RouterLink>
+      </div>
+      
+      <nav class="main-nav">
+        <RouterLink to="/">Koti</RouterLink>
+        <RouterLink to="/members">Jäsenet</RouterLink>
+        <RouterLink to="/members/create" class="nav-button">+ Lisää Jäsen</RouterLink>
       </nav>
-    </div>
-  </header>
+    </header>
 
-  <RouterView />
+    <main class="app-main-content">
+      <RouterView />
+    </main>
+
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style>
+/* --- Professional Colors --- */
+/* Variables for consistency */
+:root {
+    --color-primary: #002855; /* Deep Navy Blue */
+    --color-accent: #DAA520; /* Goldenrod/Gold Accent */
+    --color-success: #1E8449; /* Darker Green for Success */
+    --color-danger: #C0392B; /* Deep Red for Danger/Delete */
+    --color-text: #333333; /* Dark Charcoal Text */
+    --color-background-light: #f9f9f9;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+/* Base Styles */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--color-background-light);
+    color: var(--color-text);
+}
+/* ... (existing #app-wrapper, body, etc. are fine) ... */
+
+/* Header Styles */
+.app-header {
+    background-color: var(--color-primary); /* Use Navy */
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.logo-container .site-title {
+    font-size: 1.6em;
+    font-weight: 700;
+    text-decoration: none;
+    color: white;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+/* Navigation Styles */
+.main-nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 30px;
+    font-size: 1.05em;
+    padding: 5px 0;
+    transition: color 0.3s;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.main-nav a:hover {
+    color: var(--color-accent); /* Gold on Hover */
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
+.main-nav .nav-button {
+    background-color: var(--color-accent); /* Gold button for Create */
+    color: var(--color-primary); /* Navy text on Gold button */
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 35px;
+    transition: background-color 0.3s;
 }
 
-nav a:first-of-type {
-  border: 0;
+.main-nav .nav-button:hover {
+    background-color: #ffc107; /* Slightly lighter Gold on hover */
+    color: var(--color-primary);
+}
+
+/* Main Content Styles */
+.app-main-content {
+    flex-grow: 1; 
+    padding: 30px; /* Increased padding */
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
 }
 </style>
