@@ -17,13 +17,19 @@ namespace KiltaSphereAPI.Models
         [Column(TypeName = "decimal(18, 2)")] // Ensure SQL precision
         public decimal Amount { get; set; }
 
-        public DateTime PaymentDate { get; set; }
+        // Rename PaymentDate to PaidDate to be more specific
+        public DateTime? PaidDate { get; set; }
 
         public DateTime DueDate { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string Status { get; set; } = "Pending"; // e.g., "Paid", "Pending", "Overdue"
+        public string PaymentStatus { get; set; } = "Pending"; // e.g., "Paid", "Pending", "Overdue"
+
+        // Adding the missing ReferenceNumber for Finnish "Viitenumero" logic
+        [Required]
+        [MaxLength(100)]
+        public string ReferenceNumber { get; set; } = string.Empty;
 
         // Navigation property (allows loading the related Member object)
         public Member Member { get; set; } = null!;

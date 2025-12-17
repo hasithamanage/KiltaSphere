@@ -41,6 +41,10 @@ builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 // Register the Service (The business logic layer)
 builder.Services.AddScoped<IMemberService, MemberService>();
 
+// Register the Payment layers
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

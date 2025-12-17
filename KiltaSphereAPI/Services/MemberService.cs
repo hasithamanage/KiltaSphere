@@ -7,11 +7,13 @@ namespace KiltaSphereAPI.Services
     public class MemberService : IMemberService
     {
         private readonly IMemberRepository _memberRepository;
+        private readonly IPaymentService _paymentService; // Inject the IPaymentService
 
         // Inject the Repository into the Service
-        public MemberService(IMemberRepository memberRepository)
+        public MemberService(IMemberRepository memberRepository, IPaymentService paymentService)
         {
             _memberRepository = memberRepository;
+            _paymentService = paymentService;
         }
 
         public async Task<IEnumerable<Member>> GetMemberListAsync()
@@ -39,6 +41,9 @@ namespace KiltaSphereAPI.Services
             // 2. Add and Save
             await _memberRepository.AddMemberAsync(memberEntity);
             await _memberRepository.SaveChangesAsync();
+
+            // Automation: Create the first fee for the new member
+            await _paymentService.CreateInitialFeeAsync(memberEntity.MemberId);
 
             // 3. Entity to Read DTO Mapping (Returning the saved object with its new Id)
             return new MemberReadDTO
