@@ -2,19 +2,22 @@
 import { onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMemberStore } from '@/stores/memberStore';
+import { usePaymentStore } from '@/stores/paymentStore'; // Import the payment store
 
 const route = useRoute();
 const router = useRouter();
 const memberStore = useMemberStore();
+const paymentStore = usePaymentStore(); // Initialize the payment store
 
-// Get the ID from the route parameters (/member/5 -> id = 5)
-const memberId = parseInt(route.params.id);
+const memberId = parseInt(route.params.id); // Get the ID from the route parameters (/member/5 -> id = 5)
 
 // 1. Fetch the data on component mount
-onMounted(() => {
+onMounted(async() => {
     // Only fetch the data if the ID is valid
     if (memberId) {
-        memberStore.fetchMemberById(memberId);
+        // Fetch from both domains
+        await memberStore.fetchMemberById(memberId);
+        await paymentStore.fetchPaymentsByMemberId(memberId);
     }
 });
 
@@ -22,6 +25,19 @@ onMounted(() => {
 // this will temporarily hold the currently viewed member
 // allows other components (like MemberEditView) to access that same data instantly without having to call the API again
 const member = computed(() => memberStore.currentMember);
+const payments = computed(() => paymentStore.payments);
+
+// Function to handle the "Mark as Paid" button
+const handleMarkAsPaid = async (paymentId) => {
+    if (confirm('Haluatko varmasti merkitä tämän maksun suoritetuksi?')) {
+        try {
+            await paymentStore.markAsPaid(paymentId, memberId);
+            alert('Maksu päivitetty!');
+        } catch (error) {
+            alert('Virhe päivityksessä.');
+        }
+    }
+};
 
 // 3. Function to handle navigation back to the list
 const goBack = () => {
@@ -53,190 +69,220 @@ const handleDelete = async () => {
 </script>
 
 <template>
-    <div class="member-detail-container">
-        <button @click="goBack" class="back-button">← Takaisin Jäseniin</button>
-
-        <div v-if="memberStore.isLoading">Ladataan jäsentietoja... (Loading member data...)</div>
-        <div v-else-if="memberStore.error" class="error-message">
-            Virhe: {{ memberStore.error }}
-        </div>
-        
-        <div v-else-if="member">
-            <h2>👤 Jäsenen Tiedot: {{ member.firstName }} {{ member.lastName }}</h2>
-            
-            <div class="details-card">
-                <p><strong>Jäsen ID (Member ID):</strong> {{ member.memberId }}</p>
-                <p><strong>Sähköposti (Email):</strong> {{ member.email }}</p>
-                <p><strong>Tila (Status):</strong> <span :class="{'status-active': member.membershipStatus === 'Active', 'status-lapsed': member.membershipStatus === 'Lapsed'}">{{ member.membershipStatus }}</span></p>
-                <p><strong>Liittymispäivä (Joining Date):</strong> {{ new Date(member.joiningDate).toLocaleDateString('fi-FI') }}</p>
-                
-                <div class="actions">
-                    <RouterLink :to="`/member/edit/${member.memberId}`" class="action-button edit-button">Muokkaa</RouterLink>
-                    <button @click="handleDelete" class="action-button delete-button">Poista</button>
-                </div>
-            </div>
-            
-        </div>
-        <div v-else>
-            <p>Jäsentä ei löytynyt. (Member not found.)</p>
-        </div>
+  <div class="dashboard-wrapper">
+    <div class="header-actions">
+      <button @click="goBack" class="back-button">← Takaisin Jäseniin</button>
     </div>
+
+    <div v-if="memberStore.isLoading" class="loading-state">Ladataan tietoja...</div>
+    <div v-else-if="memberStore.error" class="error-message">Virhe: {{ memberStore.error }}</div>
+
+    <div v-else-if="member" class="dashboard-grid">
+      
+      <section class="info-column">
+        <h2>👤 Jäsenen Tiedot</h2>
+        <div class="details-card">
+          <div class="detail-list">
+            <div class="detail-item">
+              <span class="label">ID</span>
+              <span class="value">{{ member.memberId }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Nimi</span>
+              <span class="value">{{ member.firstName }} {{ member.lastName }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Sähköposti</span>
+              <span class="value">{{ member.email }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Status</span>
+              <span class="value">
+                <span :class="['status-badge', member.membershipStatus.toLowerCase()]">
+                  {{ member.membershipStatus }}
+                </span>
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Liittynyt</span>
+              <span class="value">{{ new Date(member.joiningDate).toLocaleDateString('fi-FI') }}</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <RouterLink :to="`/member/edit/${member.memberId}`" class="action-button edit-button">Muokkaa</RouterLink>
+            <button @click="handleDelete" class="action-button delete-button">Poista</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="payment-column">
+        <h2>💳 Maksuseuranta</h2>
+        <div class="payments-card">
+          <div v-if="paymentStore.isLoading">Ladataan maksuja...</div>
+          <div v-else-if="payments.length === 0" class="no-payments">
+            Ei maksuhistoriaa tälle jäsenelle.
+          </div>
+
+          <table v-else class="payments-table">
+            <thead>
+              <tr>
+                <th>Viite</th>
+                <th>Summa</th>
+                <th>Eräpäivä</th>
+                <th>Tila</th>
+                <th>Toiminnot</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="pay in payments" :key="pay.paymentId">
+                <td><small>{{ pay.referenceNumber }}</small></td>
+                <td>{{ pay.amount }} €</td>
+                <td>{{ new Date(pay.dueDate).toLocaleDateString('fi-FI') }}</td>
+                <td>
+                  <span :class="['status-badge', pay.paymentStatus.toLowerCase()]">
+                    {{ pay.paymentStatus }}
+                  </span>
+                </td>
+                <td>
+                  <button 
+                    v-if="pay.paymentStatus === 'Pending'" 
+                    @click="handleMarkAsPaid(pay.paymentId)"
+                    class="pay-btn"
+                  >
+                    Maksa
+                  </button>
+                  <span v-else class="paid-date">
+                    {{ new Date(pay.paidDate).toLocaleDateString('fi-FI') }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <div v-else class="error-message">Jäsentä ei löytynyt.</div>
+  </div>
 </template>
 
 <style scoped>
-/* Color Palette */
-:root {
-    --color-primary: #002855; /* Deep Navy Blue */
-    --color-accent: #DAA520; /* Goldenrod/Gold Accent */
-    --color-danger: #C0392B; /* Deep Red for Delete */
-    --color-success: #1E8449; /* Dark Green for Success */
-    --color-text-dark: #333333;
+/* Color Palette & Variables */
+.dashboard-wrapper {
+  --color-primary: #002855;
+  --color-accent: #DAA520;
+  --color-danger: #C0392B;
+  --color-success: #1E8449;
+  --color-bg: #f4f7f9;
+  
+  padding: 20px;
+  background-color: var(--color-bg);
+  min-height: 100vh;
 }
 
-.member-detail-container {
-    max-width: 750px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: white;
-    /* Adopting the list view's container aesthetic: clean edges, soft shadow */
-    border-radius: 6px; 
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Member info is 1/3, Payments is 2/3 width */
+  gap: 25px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* Stack on smaller screens */
+  }
+}
+
+/* Content Cards */
+.details-card, .payments-card {
+  background: white;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 h2 {
-    color: var(--color-primary);
-    border-bottom: 2px solid var(--color-accent); /* Gold line under title */
-    padding-bottom: 15px;
-    margin-bottom: 30px;
-    font-size: 1.8em;
-    text-align: left; /* Aligning titles left, like the list view */
-    font-weight: 600;
+  color: var(--color-primary);
+  font-size: 1.4em;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.back-button {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    cursor: pointer;
-    margin-bottom: 20px;
-    padding: 0;
-    font-size: 1em;
-    font-weight: 500;
-}
-.back-button:hover {
-    text-decoration: underline;
-}
-
-/* --- Detail List (Table Vibe) --- */
+/* Detail List Styling */
 .detail-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    /* Use the same subtle border style as the list view table */
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    overflow: hidden;
+  border: 1px solid #eee;
+  border-radius: 4px;
 }
 
 .detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee; /* Thin separator */
-    background-color: #ffffff; /* Default background */
-    transition: background-color 0.2s;
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
 }
 
-/* Zebra striping for readability, matching list view */
-.detail-item:nth-child(even) {
-    background-color: #f9f9f9;
+.detail-item:last-child { border-bottom: none; }
+.detail-item:nth-child(even) { background-color: #fafafa; }
+
+.label { font-weight: 600; color: #666; font-size: 0.85em; text-transform: uppercase; }
+.value { font-weight: 500; color: var(--color-primary); }
+
+/* Table Styling */
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.detail-item:last-child {
-    border-bottom: none;
+.payments-table th {
+  text-align: left;
+  border-bottom: 2px solid var(--color-primary);
+  padding: 10px;
+  font-size: 0.9em;
+  color: #555;
 }
 
-.label {
-    font-weight: 600;
-    color: #555;
-    width: 40%;
-    text-align: left;
-    text-transform: uppercase;
-    font-size: 0.9em; /* Smaller, like table headers */
-}
-
-.value {
-    font-weight: 500;
-    color: var(--color-text-dark);
-    text-align: right;
-    width: 60%;
-    font-size: 1em;
+.payments-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.95em;
 }
 
 /* Status Badges */
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-weight: 600;
-    font-size: 0.9em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
 }
-.status-active {
-    background-color: #e6f7ee;
-    color: var(--color-success); 
-}
-.status-pending {
-    background-color: #fff8e1;
-    color: var(--color-accent); 
-}
-.status-lapsed {
-    background-color: #fdecec;
-    color: var(--color-danger);
-}
+.status-badge.active, .status-badge.paid { background: #e6f7ee; color: var(--color-success); }
+.status-badge.pending { background: #fff3cd; color: #856404; }
+.status-badge.lapsed { background: #fdecec; color: var(--color-danger); }
 
-/* --- Action Buttons --- */
-.actions {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end; /* Aligning buttons to the right */
+/* Buttons */
+.back-button {
+  background: none; border: none; color: var(--color-primary);
+  cursor: pointer; font-weight: 600; margin-bottom: 20px;
 }
 
 .action-button {
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: 600;
-    transition: background-color 0.3s;
-    border: none;
+  padding: 8px 16px; border-radius: 4px; border: none;
+  font-weight: 600; cursor: pointer; text-decoration: none;
 }
 
-.edit-button {
-    background-color: var(--color-accent); 
-    color: var(--color-primary);
+.edit-button { background: var(--color-accent); color: var(--color-primary); margin-right: 10px; }
+.delete-button { background: var(--color-danger); color: white; }
+
+.pay-btn {
+  background: var(--color-success); color: white; border: none;
+  padding: 5px 10px; border-radius: 4px; cursor: pointer;
 }
 
-.edit-button:hover {
-    background-color: #e0a800;
-}
-
-.delete-button {
-    background-color: var(--color-danger); 
-    color: white;
-}
-
-.delete-button:hover {
-    background-color: #A93226;
-}
-
-.error-message {
-    color: var(--color-danger);
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    padding: 15px;
-    border-radius: 5px;
-    margin-top: 20px;
-}
+.actions { margin-top: 20px; display: flex; justify-content: flex-end; }
 </style>
