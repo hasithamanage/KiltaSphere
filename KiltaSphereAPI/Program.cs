@@ -45,6 +45,11 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+// Register the Communication layers
+
+builder.Services.AddScoped<ICommunicationRepository, CommunicationRepository>();
+builder.Services.AddScoped<ICommunicationService, CommunicationService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
