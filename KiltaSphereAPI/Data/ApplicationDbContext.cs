@@ -21,6 +21,10 @@ namespace KiltaSphereAPI.Data
         // Add CommunicationLog DB sets 
         public DbSet<CommunicationLog> CommunicationLogs { get; set; }
 
+        // Add User DB set
+
+        public DbSet<User> Users { get; set; }
+
 
         // This method runs when the models are being created/configured
         protected override void OnModelCreating(ModelBuilder modelBuilder)
