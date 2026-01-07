@@ -1,53 +1,53 @@
-# 🌟 KiltaSphere: Modern Full-Stack Registry & Operations Portal
+# KiltaSphere: Modern Full-Stack Registry & Operations Portal
 
-> **A professional demonstration of building secure, scalable and localized business solutions using .NET 8 and Vue 3, tailored for critical organizational management.**
+> **A professional demonstration of secure, scalable and localized business solutions using .NET 8 and Vue 3, tailored for organizational management in the Finnish market.**
 
-This project simulates a high-availability, full-stack application designed to manage complex member data, payment tracking and communication logs-mirroring the functionality required for large Finnish organizations and unions.
+KiltaSphere is a high-availability, full-stack application designed to manage complex member data, payment tracking and communication logs. It mirrors the requirements of real-world Finnish "Kilta" systems used by unions and associations (yhdistykset), focusing on data integrity, auditability and role-based security.
 
 ---
 
 ## 🛠️ Technology Stack
 
-This project explicitly targets the Full Stack .NET Development
-
-| Category | Technology | Version / Framework | Focus Area |
-| :--- | :--- | :--- | :--- |
-| **Backend** | **C# / .NET 8** | ASP.NET Core Web API | High-performance RESTful API design. |
-| **Frontend** | **Vue.js** | Vue 3 (Composition API, Pinia) | Modern, responsive Single Page Application (SPA) with centralized State Management. |
-| **Architecture** | **Clean/Layered** | Service/Repository Pattern, DTOs | Scalable, Maintainable and Testable code structure and Input Validation. |
-| **Database** | **MS SQL Server** | Entity Framework Core (EF Core) | Relational database modeling, complex queries and data integrity. |
-| **DevOps/Tools** | **Docker** | Containerization | Environment Independence (allows running frontend/backend without local SDKs) and consistent development setup. |
-
----
-
-## ✨ Core Features & Business Logic (Current Progress: **CRUD Complete**)
-
-The KiltaSphere application focuses on demonstrating competency in handling critical business data:
-
-1.  **Jäsenrekisterin Hallinta (Member Registry Management):** Secure **CRUD** operations (Create, Read, Update, Delete) for member profiles. **(API Implementation Complete)**
-2.  **Maksuseuranta (Payment Tracking):** Detailed system for tracking membership fees, payments due and historical payment status.
-3.  **Viestintälokitus (Communication Logging):** Automatic logging of all vital interactions (emails, SMS reminders) with members.
-4.  **Tietoturva (Security):** Implementation of secure authentication and authorization protocols to protect sensitive member data.
+| Category | Technology | Focus Area |
+| :--- | :--- | :--- |
+| **Backend** | **C# / .NET 8** | High-performance RESTful API with ASP.NET Core. |
+| **Frontend** | **Vue.js 3** | Composition API & Pinia for reactive state management. |
+| **Security** | **JWT & BCrypt** | Token-based sessions with industry-standard password hashing. |
+| **Architecture** | **Multi-Shell** | Service/Repository pattern with specialized UI Layouts (Admin/Member). |
+| **Database** | **MS SQL Server** | EF Core for relational modeling and complex registry queries. |
+| **DevOps** | **Docker** | Containerized frontend for environment independence. |
 
 ---
 
-## 🖼️ Visual Preview
+## ✨ Core Features & Business Logic
 
-*(Replace this placeholder with screenshot or GIF once the UI is functional.)*
+The application demonstrates competency in handling sensitive enterprise data and complex user flows:
 
-
+1. **Jäsenrekisteri (Member Registry):** Full CRUD operations for member profiles with strict data validation.
+2. **Monitasoinen Käyttöliittymä (Multi-Layout Shell):** Dynamic UI switching between **Admin Dashboard** (Sidebar-driven), **Member Portal** (Self-service) and **Auth** (Centered-focus) environments.
+3. **Maksuseuranta (Payment Tracking):** Detailed ledger for tracking membership fees, dues and payment history.
+4. **Viestintälokitus (Communication Logs):** A centralized audit trail of member interactions (emails, SMS) linked to the specific Admin user who performed the action.
+5. **Localization:** Fully localized Finnish UI/UX, respecting local organizational terminology.
 
 ---
 
-## 🚀 Getting Started (Instructions for Reviewers)
+## 🔐 Enterprise Security Implementation
 
-The client uses **Docker** for environment setup which means you only need to run two projects.
+KiltaSphere implements a robust security model that balances user experience with data protection:
+
+* **JWT Authentication:** Secure token-based flow with persistence and automatic session recovery.
+* **RBAC (Role-Based Access Control):** Claims-based authorization restricting access to Administrative tools vs. Member-only views.
+* **Axios Interceptors:** Global request middleware for automated Bearer token injection and global 401 (Unauthorized) handling.
+* **Navigation Guards:** Route-level security prevents unauthorized access to Admin paths at the architectural level.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-
-* **Docker Desktop** (Required to run the containerized frontend).
-* **.NET 8 SDK** (Required to run the backend API).
-* **MS SQL Server** (or LocalDB).
+* **.NET 8 SDK** (Backend)
+* **Docker Desktop** (Frontend)
+* **MS SQL Server / LocalDB**
 
 ---
 
@@ -63,7 +63,7 @@ The client uses **Docker** for environment setup which means you only need to ru
     dotnet ef database update
     ```
 
-3.  **Run API:** The API will run on `https://localhost:5001`.
+3.  **Run API:** The API will run on `https://localhost:7282`.
     ```bash
     dotnet run
     ```
@@ -90,4 +90,34 @@ The frontend runs entirely inside a Docker container using a pre-built image.
 
 ---
 
-**Keywords:** C#, .NET 8, Vue.js, Pinia, Docker, Full Stack, Member Management, Suomi, Kilta, Rekisteri, REST API.
+## 🖼️ Visual Preview
+
+### 🔐 Secure Login
+<img src="kuvat/login.png" width="800" />
+
+<em><strong>Login:</strong> Centered, focused interface with localized Finnish validation and JWT-protected entry.</em>
+
+---
+
+### 👥 Admin Dashboard & Registry Management
+
+<img src="kuvat/dashboard.png" width="800" />
+
+<em><strong>Main Dashboard:</strong> Quick-look metrics and system status for association secretaries.</em>
+
+---
+
+<img src="kuvat/members.png" width="800" />
+
+<em><strong>Member Registry:</strong> High-density data table with sorting and role-based action buttons.</em>
+
+---
+
+<img src="kuvat/detail-view.png" width="800" />
+
+<em><strong>Member Detail View:</strong> Comprehensive view of profile data, payment history and communication logs.</em>
+
+---
+
+**Keywords:** C#, ASP.NET Core 8, Vue.js, Pinia, Docker, Full Stack, Member Management, JWT, RBAC, Suomi, Kilta, Rekisteri, REST API.
+
