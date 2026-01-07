@@ -75,22 +75,29 @@ KiltaSphere implements a robust security model that balances user experience wit
 
 The frontend runs entirely inside a Docker container using a pre-built image.
 
-1.  **Navigate to the client directory:**
+1.  **Navigate to the project root directory:**
     ```bash
-    cd KiltaSphereClient
+    cd KiltaSphere
     ```
 
-2.  **Run Client (Requires Docker Desktop to be running):** This command installs dependencies (if not present) and starts the Vue development server.
+2.  **Start the Frontend with Docker Compose:**
+    This command builds the image, installs necessary dependencies inside the container and starts the Vue development server.
     ```bash
-    docker run -d -p 5173:5173 -v "$(pwd):/app" --name kiltasphere-dev-server kiltasphere-client:dev npm run dev
+    docker compose up --build
     ```
 
 3.  **Access the Application:**
-    Open your browser and navigate to: **`http://localhost:5173/`**
+    Once the container is running, open the browser and navigate to:
+    **`http://localhost:5173/`**
 
+4.  **Stopping the Frontend:**
+    To shut down the container and clean up the virtual network, run:
+    ```bash
+    docker compose down
+    ```
 ---
 
-## 🖼️ Visual Preview
+## 💻 Visual Preview
 
 ### 🔐 Secure Login
 <img src="kuvat/login.png" width="800" />
