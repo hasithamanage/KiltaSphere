@@ -1,0 +1,15 @@
+services:
+  frontend:
+    # Tell Docker where the Dockerfile is
+    build:
+      context: ./KiltaSphereClient
+      dockerfile: Dockerfile
+    # Replaces -p 5173:5173
+    ports:
+      - "5173:5173"
+    # Replaces -v "$(pwd):/app"
+    volumes:
+      - ./KiltaSphereClient:/app
+      - /app/node_modules
+    # Ensures the container stays running for development
+    tty: true
